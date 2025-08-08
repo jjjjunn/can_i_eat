@@ -337,8 +337,8 @@ class VisionTextExtractor:
             Returns:
                 float: 평균 신뢰도 점수 (0.0 ~ 1.0)
             """
-        if not self.is_client_ready():
-            return 0.0
+        # if not self.is_client_ready():
+        #     return 0.0
         
         try:
             with open(image_path, 'rb') as image_file:
@@ -671,6 +671,7 @@ class VisionTextExtractor:
 
 
     #     return result
+
 
 
 

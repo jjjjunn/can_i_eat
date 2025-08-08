@@ -6,6 +6,7 @@ import time
 import re
 import logging
 from typing import List, Callable, Optional
+from .auth_helper import get_google_credentials, get_api_key
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -34,7 +35,12 @@ class VisionTextExtractor:
             api_endpoint(str): Google Cloud Vision API 엔드포인트 URL
         """
         self.api_endpoint = api_endpoint
-        self.client = self._get_vision_client()
+        self.credentials = get_google_credentials() # Streamlit ver
+        # self.client = self._get_vision_client()
+    
+        if not self.credentials:
+            raise Exception("Google Cloud 인증에 실패했습니다.")
+    
         
     # Google Cloud Vision API 클라이언트 초기화
     def _get_vision_client(self) -> vision.ImageAnnotatorClient:
@@ -602,3 +608,4 @@ class VisionTextExtractor:
 
 
     #     return result
+

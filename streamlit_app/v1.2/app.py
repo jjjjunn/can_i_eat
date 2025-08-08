@@ -25,7 +25,7 @@ if python_path and python_path not in sys.path:
 from services.ocr_service import VisionTextExtractor
 from services.chatbot import IngredientsAnalyzer
 from services.rag import OptimizedRAGSystem, RAGSystem
-from services.auth_helper import get_google_credentials, get_api_key, is_client_ready
+from services.auth_helper import get_google_credentials, get_api_key
 
 # 앱 실행 시 프로젝트 루트에서 실행할 것
 # streamlit run streamlit_app/v1.2/app.py
@@ -760,6 +760,7 @@ if __name__ == "__main__":
         st.error(f"애플리케이션 실행 중 오류가 발생했습니다.: {e}")
 
         logger.error(f"앱 실행 오류: {e}", exc_info=True)
+
 
 
 

@@ -43,7 +43,8 @@ class VisionTextExtractor:
         """
         try:
             # 환경변수에서 API 키 또는 서비스 계정 정보 가져오기
-            google_cloud_key = os.environ.get('GOOGLE_CLOUD_VISION')
+            # google_cloud_key = os.environ.get('GOOGLE_CLOUD_VISION')
+            google_cloud_key = st.secrets['GOOGLE_CLOUD_VISION']['GOOGLE_CLOUD_VISION']
             client_options = {'api_endpoint': self.api_endpoint}
             credentials = None
             
@@ -585,5 +586,6 @@ class VisionTextExtractor:
     #         if item not in seen:
     #             seen.add(item)
     #             result.append(item)
+
 
     #     return result

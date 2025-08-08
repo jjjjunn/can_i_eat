@@ -81,26 +81,46 @@ class RAGInitializer:
     @staticmethod
     def initialize_rag_system() -> bool:
         """RAG 시스템 초기화"""
-        if st.session_state.get('rag_system') is not None:
-            return True
+        # if st.session_state.get('rag_system') is not None:
+        #     return True
         
-        try:
-            with st.spinner("RAG 시스템 초기화 중..."):
-                # OptimizedRAGSystem을 사용하거나, 필요한 RAG 시스템을 선택하여 초기화
-                rag_instance = OptimizedRAGSystem()
+        # try:
+        #     with st.spinner("RAG 시스템 초기화 중..."):
+        #         # OptimizedRAGSystem을 사용하거나, 필요한 RAG 시스템을 선택하여 초기화
+        #         rag_instance = OptimizedRAGSystem()
                 
-                # 새로운 동기 함수를 호출하여 초기화 진행
-                rag_instance.initialize() # public 메서드 호출
+        #         # 새로운 동기 함수를 호출하여 초기화 진행
+        #         rag_instance.initialize() # public 메서드 호출
                 
-                st.session_state.rag_system = rag_instance
-                st.info("RAG 시스템 초기화 완료")
-                return True
+        #         st.session_state.rag_system = rag_instance
+        #         st.info("RAG 시스템 초기화 완료")
+        #         return True
             
+        # except Exception as e:
+        #     st.error(f"RAG 시스템 초기화 실패: {e}")
+        #     logger.error(f"RAG 시스템 초기화 오류: {e}")
+        #     return False
+
+        # Streamlit Ver
+        try:
+            # 인증 확인
+            if not get_google_credentials():
+                st.warning("Google Cloud 인증이 설정되지 않았습니다. RAG 기능을 사용할 수 없습니다.")
+                return False
+                
+            with st.spinner("RAG 시스템 초기화 중..."):
+                rag_instance = OptimizedRAGSystem()
+                rag_instance.initialize()
+                st.session_state.rag_system = rag_instance
+                st.success("✅ RAG 시스템 초기화 완료")
+                return True
+                
         except Exception as e:
-            st.error(f"RAG 시스템 초기화 실패: {e}")
+            st.warning(f"RAG 시스템 초기화 실패: {e}")
+            st.info("RAG 기능 없이 기본 분석만 진행됩니다.")
             logger.error(f"RAG 시스템 초기화 오류: {e}")
-            return False
-        
+            return False  # False를 반환하지만 앱을 중단하지 않음
+    
     @staticmethod
     def initialize_analyzer() -> bool:
         """분석기 초기화"""
@@ -739,4 +759,5 @@ if __name__ == "__main__":
         st.error(f"애플리케이션 실행 중 오류가 발생했습니다.: {e}")
 
         logger.error(f"앱 실행 오류: {e}", exc_info=True)
+
 

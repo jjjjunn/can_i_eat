@@ -8,10 +8,10 @@ def get_google_credentials():
     """Google Cloud 인증 정보 반환"""
     try:
         # Streamlit Cloud에서 실행 중인 경우
-        if hasattr(st, 'secrets') and 'GOOGLE_SERVICE_ACCOUNT' in st.secrets:
-            credentials_dict = dict(st.secrets["GOOGLE_SERVICE_ACCOUNT"])
+        if hasattr(st, 'secrets') and 'OOGLE_CREDENTIALS_JSON' in st.secrets:
+            credentials_json = st.secrets["OOGLE_CREDENTIALS_JSON"]
             credentials = service_account.Credentials.from_service_account_info(
-                credentials_dict,
+                credentials_json,
                 scopes=['https://www.googleapis.com/auth/cloud-platform']
             )
             return credentials
@@ -19,7 +19,7 @@ def get_google_credentials():
         # 로컬 환경에서 서비스 계정 키 파일 사용
         elif os.path.exists('service-account-key.json'):
             credentials = service_account.Credentials.from_service_account_file(
-                'service-account-key.json',
+                'google_cloud_visuon.json',
                 scopes=['https://www.googleapis.com/auth/cloud-platform']
             )
             return credentials

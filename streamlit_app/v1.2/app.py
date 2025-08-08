@@ -602,11 +602,25 @@ def display_usage_guide() -> None:
 def display_system_status() -> None:
     """시스템 상태 표시"""
     with st.expander("🔧 시스템 상태"):
-        if os.environ.get('GOOGLE_API_KEY'):
+        # if os.environ.get('GOOGLE_API_KEY'):
+        #     st.success("✅ Google API 키가 설정되어 있습니다.")
+        # else:
+        #     st.error("❌ Google API 키가 설정되지 않았습니다.")
+        #     st.code("GOOGLE_API_KEY 환경변수를 설정해주세요.")
+        
+        # API 키 상태 (Streamlit 버전)
+        api_key = get_api_key()
+        if api_key:
             st.success("✅ Google API 키가 설정되어 있습니다.")
         else:
             st.error("❌ Google API 키가 설정되지 않았습니다.")
-            st.code("GOOGLE_API_KEY 환경변수를 설정해주세요.")
+
+        # 인증 상태
+        credentials = get_google_credentials()
+        if credentials:
+            st.success("✅ Google Cloud 인증이 설정되어 있습니다.")
+        else:
+            st.error("❌ Google Cloud 인증이 설정되지 않았습니다.")
             
         # RAG 시스템 상태
         if st.session_state.get('rag_system'):
@@ -725,3 +739,4 @@ if __name__ == "__main__":
         st.error(f"애플리케이션 실행 중 오류가 발생했습니다.: {e}")
 
         logger.error(f"앱 실행 오류: {e}", exc_info=True)
+

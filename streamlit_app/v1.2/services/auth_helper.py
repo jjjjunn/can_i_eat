@@ -17,7 +17,7 @@ def get_google_credentials():
             return credentials
         
         # 로컬 환경에서 서비스 계정 키 파일 사용
-        elif os.path.exists('service-account-key.json'):
+        elif os.path.exists('google_cloud_vision.json'):
             credentials = service_account.Credentials.from_service_account_file(
                 'google_cloud_visuon.json',
                 scopes=['https://www.googleapis.com/auth/cloud-platform']

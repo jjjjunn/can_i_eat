@@ -43,7 +43,8 @@ class VisionTextExtractor:
         """
         try:
             # 환경변수에서 API 키 또는 서비스 계정 정보 가져오기
-            google_cloud_key = os.environ.get('GOOGLE_CLOUD_VISION')
+            # google_cloud_key = os.environ.get('GOOGLE_CLOUD_VISION')
+            google_cloud_key = st.secret['GOOGLE_CREDENTIALS_JSON']['GOOGLE_CREDENTIALS_JSON']
             client_options = {'api_endpoint': self.api_endpoint}
             credentials = None
             
@@ -51,6 +52,19 @@ class VisionTextExtractor:
                 # JSON 키 파일 경로인 경우
                 if google_cloud_key.endswith('.json') and os.path.exists(google_cloud_key):
                     credentials = service_account.Credentials.from_service_account_file(google_cloud_key)
+
+            else:
+                # 2) JSON 문자열일 수 있으므로 파싱 시도
+                try:
+                    json_obj = json.loads(google_cloud_key)
+                    # 임시 파일로 JSON 저장
+                    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp_file:
+                        json.dump(json_obj, tmp_file)
+                        tmp_path = tmp_file.name
+                    credentials = service_account.Credentials.from_service_account_file(tmp_path)
+                except json.JSONDecodeError:
+                    # JSON이 아니면 무시(기존 코드처럼 None으로)
+                    pass
 
             # credentaials 제공 시 credentaials 사용, 아닐 경우 client_options만 사용
             return vision.ImageAnnotatorClient(client_options=client_options, credentials=credentials)
@@ -585,5 +599,6 @@ class VisionTextExtractor:
     #         if item not in seen:
     #             seen.add(item)
     #             result.append(item)
+
 
     #     return result

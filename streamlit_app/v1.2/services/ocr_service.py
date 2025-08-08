@@ -328,17 +328,17 @@ class VisionTextExtractor:
         return result
 
     def get_text_confidence_score(self, image_path: str) -> float:
-            """
-            이미지의 텍스트 인식 신뢰도 점수를 반환
+        """
+        이미지의 텍스트 인식 신뢰도 점수를 반환
+        
+        Args:
+            image_path (str): 이미지 파일 경로
             
-            Args:
-                image_path (str): 이미지 파일 경로
-                
-            Returns:
-                float: 평균 신뢰도 점수 (0.0 ~ 1.0)
-            """
-        # if not self.is_client_ready():
-        #     return 0.0
+        Returns:
+            float: 평균 신뢰도 점수 (0.0 ~ 1.0)
+        """
+        if not self.is_client_ready():
+            return 0.0
         
         try:
             with open(image_path, 'rb') as image_file:
@@ -671,6 +671,7 @@ class VisionTextExtractor:
 
 
     #     return result
+
 
 
 

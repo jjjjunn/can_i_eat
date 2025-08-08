@@ -27,7 +27,7 @@ class VisionTextExtractor:
     Google Cloud Vision API를 사용하여 이미지에서 성분을 추출하고 관리하는 클래스
     """
     
-    def __init__(self, api_endpoint: str = 'eu-vision.googleaois.com'):
+    def __init__(self, api_endpoint: str = 'eu-vision.googleapis.com'):
         """
         VisionTextExtractor 클래스 초기화
         
@@ -35,49 +35,92 @@ class VisionTextExtractor:
             api_endpoint(str): Google Cloud Vision API 엔드포인트 URL
         """
         self.api_endpoint = api_endpoint
-        self.credentials = get_google_credentials() # Streamlit ver
-        # self.client = self._get_vision_client()
+        self.credentials = None
+        self.client = None
+
+        # 클라이언트 초기화
+        self._initialize_client()
     
         if not self.credentials:
             raise Exception("Google Cloud 인증에 실패했습니다.")
+
+    def _initialize_client(self):
+        """Google Cloud Vision API 클라이언트 초기화"""
+        try:
+            # 인증 정보 가져오기
+            self.credentials = get_google_credentials()
+            
+            if self.credentials:
+                # 인증 정보가 있는 경우
+                client_options = None
+                if self.api_endpoint != 'vision.googleapis.com':
+                    from google.api_core import client_options as client_options_lib
+                    client_options = client_options_lib.ClientOptions(
+                        api_endpoint=self.api_endpoint
+                    )
+                
+                self.client = vision.ImageAnnotatorClient(
+                    credentials=self.credentials,
+                    client_options=client_options
+                )
+                logger.info("Vision API 클라이언트가 성공적으로 초기화되었습니다.")
+                
+            else:
+                # 기본 인증 시도
+                try:
+                    self.client = vision.ImageAnnotatorClient()
+                    logger.info("기본 인증으로 Vision API 클라이언트가 초기화되었습니다.")
+                except Exception as e:
+                    logger.error(f"기본 인증 실패: {e}")
+                    self.client = None
+                    
+        except Exception as e:
+            logger.error(f"Vision API 클라이언트 초기화 실패: {e}")
+            self.client = None
     
+    def is_client_ready(self) -> bool:
+        """클라이언트 준비 상태 확인"""
+        return self.client is not None
         
     # Google Cloud Vision API 클라이언트 초기화
     def _get_vision_client(self) -> vision.ImageAnnotatorClient:
         """
         Google Cloud Vision API 클라이언트를 생성하고 반환
         """
-        try:
-            # 환경변수에서 API 키 또는 서비스 계정 정보 가져오기
-            # google_cloud_key = os.environ.get('GOOGLE_CLOUD_VISION')
-            google_cloud_key = st.secret['GOOGLE_CREDENTIALS_JSON']['GOOGLE_CREDENTIALS_JSON']
-            client_options = {'api_endpoint': self.api_endpoint}
-            credentials = None
+        if not self.client:
+            self._initialize_client()
+        return self.client
+        # try:
+        #     # 환경변수에서 API 키 또는 서비스 계정 정보 가져오기
+        #     # google_cloud_key = os.environ.get('GOOGLE_CLOUD_VISION')
+        #     google_cloud_key = st.secret['GOOGLE_CREDENTIALS_JSON']['GOOGLE_CREDENTIALS_JSON']
+        #     client_options = {'api_endpoint': self.api_endpoint}
+        #     credentials = None
             
-            if google_cloud_key:
-                # JSON 키 파일 경로인 경우
-                if google_cloud_key.endswith('.json') and os.path.exists(google_cloud_key):
-                    credentials = service_account.Credentials.from_service_account_file(google_cloud_key)
+        #     if google_cloud_key:
+        #         # JSON 키 파일 경로인 경우
+        #         if google_cloud_key.endswith('.json') and os.path.exists(google_cloud_key):
+        #             credentials = service_account.Credentials.from_service_account_file(google_cloud_key)
 
-            else:
-                # 2) JSON 문자열일 수 있으므로 파싱 시도
-                try:
-                    json_obj = json.loads(google_cloud_key)
-                    # 임시 파일로 JSON 저장
-                    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp_file:
-                        json.dump(json_obj, tmp_file)
-                        tmp_path = tmp_file.name
-                    credentials = service_account.Credentials.from_service_account_file(tmp_path)
-                except json.JSONDecodeError:
-                    # JSON이 아니면 무시(기존 코드처럼 None으로)
-                    pass
+        #     else:
+        #         # 2) JSON 문자열일 수 있으므로 파싱 시도
+        #         try:
+        #             json_obj = json.loads(google_cloud_key)
+        #             # 임시 파일로 JSON 저장
+        #             with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp_file:
+        #                 json.dump(json_obj, tmp_file)
+        #                 tmp_path = tmp_file.name
+        #             credentials = service_account.Credentials.from_service_account_file(tmp_path)
+        #         except json.JSONDecodeError:
+        #             # JSON이 아니면 무시(기존 코드처럼 None으로)
+        #             pass
 
-            # credentaials 제공 시 credentaials 사용, 아닐 경우 client_options만 사용
-            return vision.ImageAnnotatorClient(client_options=client_options, credentials=credentials)
+        #     # credentaials 제공 시 credentaials 사용, 아닐 경우 client_options만 사용
+        #     return vision.ImageAnnotatorClient(client_options=client_options, credentials=credentials)
 
-        except Exception as e:
-            logger.error(f"Google Vision API 클라이언트 초기화 실패: {e}")
-            raise Exception(f"Google Vision API 설정을 확인해주세요: {e}")
+        # except Exception as e:
+        #     logger.error(f"Google Vision API 클라이언트 초기화 실패: {e}")
+        #     raise Exception(f"Google Vision API 설정을 확인해주세요: {e}")
 
 
     # 이미지 텍스트 감지 함수 (Google Cloud Vision API)
@@ -94,6 +137,10 @@ class VisionTextExtractor:
         Raises:
             Exception: Google Cloud Vision API 호출 중 오류 발생
         """
+        # 클라이언트 상태 확인
+        if not self.is_client_ready():
+            raise Exception("Vision API 클라이언트가 초기화되지 않았습니다. 인증 설정을 확인해주세요.")
+            
         try:
             with open(image_path, 'rb') as image_file:
                 content = image_file.read()
@@ -290,26 +337,29 @@ class VisionTextExtractor:
             Returns:
                 float: 평균 신뢰도 점수 (0.0 ~ 1.0)
             """
-            try:
-                with open(image_path, 'rb') as image_file:
-                    content = image_file.read()
-                    
-                image = vision.Image(content=content)
-                response = self.client.document_text_detection(image=image)
+        if not self.is_client_ready():
+            return 0.0
+        
+        try:
+            with open(image_path, 'rb') as image_file:
+                content = image_file.read()
                 
-                if not response.full_text_annotation:
-                    return 0.0
-                
-                confidences = []
-                for page in response.full_text_annotation.pages:
-                    for block in page.blocks:
-                        confidences.append(block.confidence)
-                
-                return sum(confidences) / len(confidences) if confidences else 0.0
+            image = vision.Image(content=content)
+            response = self.client.document_text_detection(image=image)
             
-            except Exception as e:
-                logger.error(f"신뢰도 점수 계산 중 오류: {e}")
+            if not response.full_text_annotation:
                 return 0.0
+            
+            confidences = []
+            for page in response.full_text_annotation.pages:
+                for block in page.blocks:
+                    confidences.append(block.confidence)
+            
+            return sum(confidences) / len(confidences) if confidences else 0.0
+        
+        except Exception as e:
+            logger.error(f"신뢰도 점수 계산 중 오류: {e}")
+            return 0.0
 
     def suggest_image_improvements(self, image_path: str) -> List[str]:
         """
@@ -380,6 +430,12 @@ class VisionTextExtractor:
         Raises:
             Exception: 텍스트 감지 또는 성분 추출 중 오류 발생
         """
+        # 클라이언트 상태 확인
+        if not self.is_client_ready():
+            error_msg = "Vision API 클라이언트가 초기화되지 않았습니다. 인증 설정을 확인해주세요."
+            if progress_callback:
+                progress_callback(0, "클라이언트 오류")
+            raise Exception(error_msg)
 
         def update_progress(value: int, message: str):
             """진행 상황 업데이트 헬퍼 함수"""
@@ -488,6 +544,13 @@ class VisionTextExtractor:
             dict: 연결 상태 정보
                 {"connected": bool, "message": str, "error": Optional[str]}
         """
+        if not self.is_client_ready():
+            return {
+                "connected": False,
+                "message": "클라이언트가 초기화되지 않음",
+                "error": "Vision API 클라이언트 초기화 실패"
+            }
+            
         try:
             # 간단한 테스트 이미지 생성 (1x1 픽셀 PNG)
             test_image_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\tpHYs\x00\x00\x0b\x13\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\nIDATx\x9cc\xf8\x0f\x00\x00\x01\x00\x01\x00\x18\xdd\x8d\xb4\x00\x00\x00\x00IEND\xaeB`\x82'
@@ -608,6 +671,7 @@ class VisionTextExtractor:
 
 
     #     return result
+
 
 
 

@@ -710,7 +710,7 @@ elif st.session_state.get('current_ingredients'):
 
 #uploaded_file이 None 일 때만 표시
 else: 
-    st.info("👈🏻 성분표 이미지를 업로드해주세요")
+    st.info("☝🏻 성분표 이미지를 업로드해주세요")
     display_usage_guide()
     display_system_status()
 
@@ -723,4 +723,5 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         st.error(f"애플리케이션 실행 중 오류가 발생했습니다.: {e}")
+
         logger.error(f"앱 실행 오류: {e}", exc_info=True)

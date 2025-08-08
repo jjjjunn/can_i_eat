@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 import sys
+from .auth_helper import get_google_credentials, get_api_key
 
 # .env 로드
 load_dotenv()
@@ -759,5 +760,6 @@ if __name__ == "__main__":
         st.error(f"애플리케이션 실행 중 오류가 발생했습니다.: {e}")
 
         logger.error(f"앱 실행 오류: {e}", exc_info=True)
+
 
 

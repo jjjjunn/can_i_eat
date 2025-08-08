@@ -18,7 +18,8 @@ class IngredientsAnalyzer:
         
     def _initialize_models(self):
         """모델 초기화"""
-        genai_key = os.getenv("GOOGLE_API_KEY") # 제미나이 API 불러오기
+        # genai_key = os.getenv("GOOGLE_API_KEY") # 제미나이 API 불러오기
+        genai_key = st.secrets['GOOGLE_API_KEY']['GOOGLE_API_KEY']
         if not genai_key:
             raise ValueError("GOOGLE_API_KEY 환경 변수가 설정되지 않았습니다.")
 
@@ -142,4 +143,5 @@ class IngredientsAnalyzer:
             return rag_result.get('answer', '답변을 생성할 수 없습니다.')
         except Exception as e:
             logger.error(f"RAG 시스템 호출 실패: {e}")
+
             raise

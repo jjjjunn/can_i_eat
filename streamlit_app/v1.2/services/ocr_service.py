@@ -35,7 +35,7 @@ class VisionTextExtractor:
             api_endpoint(str): Google Cloud Vision API 엔드포인트 URL
         """
         self.api_endpoint = api_endpoint
-        self.credentials = get_google_credentials() # Streamlit ver
+        self.client = get_google_credentials() # Streamlit ver
         # self.client = self._get_vision_client()
     
         if not self.credentials:
@@ -608,4 +608,5 @@ class VisionTextExtractor:
 
 
     #     return result
+
 

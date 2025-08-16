@@ -1,5 +1,3 @@
-# social_auth_fastapi.py - 수정된 버전
-
 import os
 import logging
 from typing import Optional
@@ -50,6 +48,11 @@ KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
 
 STREAMLIT_APP_URL = os.getenv("STREAMLIT_APP_URL")
 
+# 로깅 추가 - 환경변수 확인
+logger.info(f"🔍 OAuth 환경변수 확인:")
+logger.info(f"  - GOOGLE_REDIRECT_URI: {GOOGLE_REDIRECT_URI}")
+logger.info(f"  - KAKAO_REDIRECT_URI: {KAKAO_REDIRECT_URI}")
+
 # 환경 변수 검증 - 수정된 버전
 def validate_oauth_config():
     """OAuth 설정 검증 - 실패시 앱 시작 중단"""
@@ -77,7 +80,16 @@ def validate_oauth_config():
         logger.warning("⚠️ OAuth 기능이 제한적으로 작동할 수 있습니다.")
         return False
     
+    # ✅ redirect_uri 유효성 검사 추가
+    if GOOGLE_REDIRECT_URI and not GOOGLE_REDIRECT_URI.startswith('https://'):
+        logger.warning(f"⚠️ Google redirect_uri가 HTTPS가 아닙니다: {GOOGLE_REDIRECT_URI}")
+    
+    if KAKAO_REDIRECT_URI and not KAKAO_REDIRECT_URI.startswith('https://'):
+        logger.warning(f"⚠️ Kakao redirect_uri가 HTTPS가 아닙니다: {KAKAO_REDIRECT_URI}")
+    
     logger.info("✅ OAuth 환경 변수 설정 완료")
+    logger.info(f"  Google redirect: {GOOGLE_REDIRECT_URI}")
+    logger.info(f"  Kakao redirect: {KAKAO_REDIRECT_URI}")
     return True
 
 # 앱 시작 시 환경 변수 검증 - 실패시에도 앱 시작 허용

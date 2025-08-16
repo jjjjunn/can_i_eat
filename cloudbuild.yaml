@@ -1,0 +1,36 @@
+steps:
+# 1단계: 원래 Dockerfile로 빌드
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+    'build',
+    '-f', 'Dockerfile',
+    '-t', 'gcr.io/$PROJECT_ID/can-i-eat-st:latest',
+    '.'
+  ]
+  timeout: '1800s'  # 30분
+
+# 2단계: 이미지 푸시
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/can-i-eat-st:latest']
+
+# 3단계: Cloud Run 배포
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args: [
+    'run', 'deploy', 'can-i-eat-st',
+    '--image', 'gcr.io/$PROJECT_ID/can-i-eat-st:latest',
+    '--region', 'asia-northeast3',
+    '--platform', 'managed',
+    '--allow-unauthenticated',
+    '--port', '8080',
+    '--memory', '2Gi',
+    '--cpu', '2',
+    '--timeout', '300'
+  ]
+
+images:
+- 'gcr.io/$PROJECT_ID/can-i-eat-st:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'

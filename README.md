@@ -19,6 +19,8 @@
 - 분석 기록 DB 저장 및 조회/삭제 기능
 - GCP Cloud Run, Cloud SQL(PostgreSQL), Cloud Storage 연동
 
+> ⏱️ 프로젝트 기간: **2025년 7월 25일 ~ 2025년 8월 18일**  
+> 🛠️ 주요 언어: `FastAPI`, `Python(3.12.0)`, `PostgreSQL`
 ---
 
 ## 주요 기능
@@ -52,7 +54,7 @@ MSA(Microservice Architecture) 사상을 적용하여 **Streamlit 프론트엔�
 
 ---
 
-## 폴더 구조
+## 프로젝트트 폴더 구조
 
 ```
 can_i_eat/
@@ -195,3 +197,9 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 streamlit run app.py
 ```
 이제 웹 브라우저에서 `http://localhost:8501` 주소로 접속하여 서비스를 확인할 수 있습니다.
+
+---
+
+## 📜 라이선스 (License)
+
+이 프로젝트는 [MIT License](LICENSE) 를 따릅니다.

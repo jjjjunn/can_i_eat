@@ -46,48 +46,10 @@
 ## 🏛️ 시스템 아키텍처
 
 MSA(Microservice Architecture) 사상을 적용하여 **Streamlit 프론트엔드**와 **FastAPI 백엔드**를 분리 설계했습니다. 이를 통해 각 서비스의 독립적인 개발 및 배포가 가능해졌고, 유지보수성을 향상시켰습니다. 모든 서비스는 Docker 컨테이너화되어 GCP Cloud Run을 통해 서버리스 환경에서 효율적으로 운영됩니다.
+![System Arcihtecture](assets/system_architecture.png)
 
-> 💡 **Note:** 아래 Mermaid 코드를 [Mermaid Live Editor](https://mermaid.live/) 등에 붙여넣으면 다이어그램 이미지를 생성할 수 있습니다.
 
-```mermaid
-graph TD
-    subgraph User
-        A[웹 브라우저]
-    end
 
-    subgraph GCP Cloud Run (Frontend)
-        B[Streamlit Web App]
-    end
-
-    subgraph GCP Cloud Run (Backend)
-        C[Nginx] --> D{Supervisor}
-        D --> E[FastAPI: Uvicorn]
-        D --> F[Cloud SQL Proxy]
-    end
-
-    subgraph Google Cloud Platform
-        G[Cloud SQL for PostgreSQL]
-        H[Cloud Storage]
-        I[Cloud Vision AI]
-        J[Google Gemini Pro]
-        K[Secret Manager]
-    end
-
-    subgraph External Services
-        L[Google OAuth 2.0]
-        M[Kakao OAuth 2.0]
-    end
-
-    A -- HTTPS --> B
-    B -- REST API (JWT Auth) --> C
-    E -- DB Connection via Proxy --> G
-    E -- Image CRUD --> H
-    E -- OCR Request --> I
-    E -- AI Analysis Request --> J
-    E -- Load Secrets --> K
-    E -- Social Login --> L
-    E -- Social Login --> M
-```
 ---
 
 ## 폴더 구조
@@ -115,43 +77,8 @@ can_i_eat/
 ## 📄 데이터베이스 ERD
 
 사용자, 소셜 계정, 분석 기록을 중심으로 데이터 모델을 설계했으며, `SQLModel`을 사용하여 Python 클래스와 DB 스키마를 일관성 있게 관리합니다.
+![ERD](assets/ERD.png)
 
-```mermaid
-erDiagram
-    USER ||--o{ SOCIAL_ACCOUNT : "has"
-    USER ||--o{ USER_FOOD_LOG : "creates"
-    USER }|..|{ ROLE : "has"
-
-    USER {
-        uuid id PK "사용자 ID"
-        string username
-        string email
-        datetime created_at
-    }
-
-    SOCIAL_ACCOUNT {
-        uuid id PK "소셜 계정 ID"
-        uuid user_id FK "사용자 ID"
-        string provider "소셜 미디어 (google, kakao)"
-        string social_id "소셜 ID"
-        datetime created_at
-    }
-
-    USER_FOOD_LOG {
-        uuid id PK "분석 기록 ID"
-        uuid user_id FK "사용자 ID"
-        string image_url "GCS 이미지 URL"
-        json ocr_result "OCR 결과"
-        json gemini_response "AI 분석 결과"
-        datetime created_at
-    }
-
-    ROLE {
-        uuid id PK "역할 ID"
-        string name "역할명 (user, admin)"
-        string description "역할 설명"
-    }
-```
 
 ---
 
@@ -162,26 +89,8 @@ erDiagram
 LLM의 가장 큰 약점인 **환각(Hallucination) 현상**을 최소화하고, 사실에 기반한 신뢰도 높은 답변을 제공하기 위해 **RAG(Retrieval-Augmented Generation)** 파이프라인을 직접 설계하고 구현했습니다.
 
 #### RAG 파이프라인 흐름도
+![RAG Pipeline](assets/RAG_Pipeline.png)
 
-```mermaid
-graph LR
-    subgraph Data Preprocessing (Offline)
-        A[PDF Documents] --> B{PyMuPDFLoader};
-        B --> C[RecursiveCharacterTextSplitter];
-        C --> D[GoogleGenerativeAIEmbeddings];
-        D --> E[FAISS Vector Store];
-        E -- Save Index --> F[(faiss_index_thesis)];
-    end
-
-    subgraph Query Processing (Online)
-        G[User Query] --> H[GoogleGenerativeAIEmbeddings];
-        H -- Embed Query --> I((FAISS Index));
-        I -- Similarity Search --> J[Relevant Documents];
-        G & J -- Combine --> K{Prompt Template};
-        K --> L[Google Gemini Pro];
-        L --> M[Final Answer];
-    end
-```
 
 #### 구현 상세 (`services/rag.py`)
 

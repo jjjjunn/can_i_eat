@@ -5,6 +5,10 @@ set -e
 
 echo "🚀 컨테이너 시작 중..."
 
+# Cloud Run PORT 환경변수 확인 (기본값: 8080)
+export PORT=${PORT:-8080}
+echo "📡 포트 설정: $PORT"
+
 # 환경 변수 확인
 echo "📋 환경 변수 확인 중..."
 if [ -z "$JWT_SECRET_KEY" ]; then

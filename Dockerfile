@@ -26,11 +26,12 @@ COPY . .
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # 5단계: supervisord 설정 파일 복사
-# 프로젝트 루트에 생성한 supervisord.conf 파일을 컨테이너에 복사합니다.
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# 추가: 로그 디렉토리 생성 및 권한 설정
-RUN mkdir -p /var/log/supervisor /app/uploads /var/log/nginx && \
+# 추가: 로그 디렉토리 및 임시 디렉토리 생성
+RUN mkdir -p /var/log/supervisor /app/uploads /var/log/nginx \
+    /tmp/client_temp /tmp/proxy_temp_path /tmp/fastcgi_temp \
+    /tmp/uwsgi_temp /tmp/scgi_temp && \
     chmod 755 /var/log/supervisor && \
     chmod 755 /app/uploads && \
     chmod 755 /var/log/nginx
@@ -39,14 +40,13 @@ RUN mkdir -p /var/log/supervisor /app/uploads /var/log/nginx && \
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV LOG_LEVEL=INFO
+ENV PORT=8080
 
 # 6단계: 포트 노출
-# Cloud Run이 사용하는 포트(8080)를 노출합니다.
-EXPOSE 8080
+EXPOSE $PORT
 
 # 7단계: 시작 스크립트 실행 권한 부여
 RUN chmod +x /app/start.sh
 
 # 8단계: 애플리케이션 실행 명령어 설정
-# 시작 스크립트를 통해 안전하게 서비스를 시작합니다.
 CMD ["/app/start.sh"]

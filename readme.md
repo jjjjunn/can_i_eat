@@ -47,7 +47,7 @@ https://www.youtube.com/watch?v=tFvjmRmiAmA
 
 | 로그인 | 이미지 업로드 | AI 분석 결과 |
 | :---: | :---: | :---: |
-| *(스크린샷 1)* | *(스크린샷 2)* | *(스크린샷 3)* |
+| *![로그인](assets/login.png)* | *![OCR](assets/Google_vision.png)* | *![챗봇](assets/after_answer.png)* |
 
 ---
 

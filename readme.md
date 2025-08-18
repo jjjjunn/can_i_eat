@@ -10,7 +10,6 @@
 
 ---
 
-
 ## 프로젝트 소개
 
 - 임신부를 위한 음식 성분 분석 및 섭취 가능 여부 안내 서비스
@@ -23,14 +22,14 @@
 > 🛠️ 주요 언어: `FastAPI`, `Python(3.12.0)`, `PostgreSQL`
 ---
 
-## 주요 기능
+## ✨ 주요 기능
 
-- 이미지 기반 성분표 OCR 추출
-- AI(Gemini) 기반 섭취 가능 여부 분석
-- 분석 결과 다운로드(TXT/JSON)
-- 사용자별 분석 기록 관리(조회/삭제)
-- 소셜 로그인(Google, Kakao)
-- 관리자 페이지(전체 기록 조회/삭제)
+- **📸 모바일 최적화된 이미지 업로드**: 스마트폰 카메라로 직접 촬영하거나 갤러리에서 이미지를 손쉽게 업로드할 수 있습니다.
+- **🔬 이미지 기반 성분표 OCR 추출**: Google Vision AI를 활용하여 이미지 속 텍스트를 정확하게 추출합니다.
+- **🤖 AI(Gemini) 기반 섭취 가능 여부 분석**: RAG 기술을 접목하여 신뢰도 높은 섭취 가이드를 제공합니다.
+- **👤 사용자별 분석 기록 관리**: 소셜 로그인(Google, Kakao)을 지원하며, 사용자별 분석 기록을 조회하고 삭제할 수 있습니다.
+- **📊 분석 결과 다운로드**: 분석된 성분 목록을 TXT 또는 JSON 파일 형태로 다운로드할 수 있습니다.
+- **⚙️ 유연한 실행 환경**: 로컬/클라우드 환경이 분리되어 있어 `run.bat` 스크립트로 손쉽게 테스트 환경을 전환할 수 있습니다.
 
 ---
 
@@ -49,8 +48,6 @@
 
 MSA(Microservice Architecture) 사상을 적용하여 **Streamlit 프론트엔드**와 **FastAPI 백엔드**를 분리 설계했습니다. 이를 통해 각 서비스의 독립적인 개발 및 배포가 가능해졌고, 유지보수성을 향상시켰습니다. 모든 서비스는 Docker 컨테이너화되어 GCP Cloud Run을 통해 서버리스 환경에서 효율적으로 운영됩니다.
 ![System Arcihtecture](assets/system_architecture.png)
-
-
 
 ---
 
@@ -99,7 +96,6 @@ LLM의 가장 큰 약점인 **환각(Hallucination) 현상**을 최소화하고,
 #### RAG 파이프라인 흐름도
 ![RAG Pipeline](assets/RAG_Pipeline.png)
 
-
 #### 구현 상세 (`services/rag.py`)
 
 1.  **데이터 소스:** 임산부 영양 및 식품 안전 관련 논문, 의학 가이드라인 PDF 파일을 신뢰할 수 있는 원천 데이터로 사용했습니다.
@@ -147,6 +143,14 @@ LLM의 가장 큰 약점인 **환각(Hallucination) 현상**을 최소화하고,
 - **문제:** RAG 시스템의 기반 데이터를 추가하기 위해 수백 페이지의 PDF를 처리하는 과정에서 Cloud Run 인스턴스의 메모리 한계를 초과하여 서버가 다운되었습니다.
 - **해결:** `services/rag.py`에 **점진적 처리(Incremental Processing)** 로직을 추가했습니다. 문서 청크의 개수가 임계값을 초과하면, 전체를 한 번에 처리하는 대신 작은 배치(Batch) 단위로 나누어 순차적으로 벡터화하고 인덱스에 추가하도록 로직을 수정했습니다. 각 배치 처리 후 `gc.collect()`를 명시적으로 호출하여 메모리 사용량을 안정적으로 관리했습니다.
 
+### 3. 로컬/클라우드 환경 변수 관리의 복잡성
+- **문제:** 로컬 테스트와 클라우드 배포 시 DB 접속 정보, API URL 등 다른 환경 변수를 사용해야 했으나, `.env` 파일 하나로 관리하여 수동 변경이 잦고 실수가 발생했습니다. 또한, 여러 파이썬 파일에서 `load_dotenv()`를 중복 호출하여 설정이 덮어쓰이는 문제가 발생했습니다.
+- **해결:** **중앙 집중식 환경 로더(`utils/env_loader.py`)를 구현**했습니다. `APP_ENV`라는 환경 변수 값('local' 또는 'cloud')에 따라 `.env.local` 또는 `.env.cloud` 파일을 선택적으로 로드하도록 설계했습니다. 각 모듈에 흩어져 있던 `load_dotenv()` 호출을 모두 제거하고, 앱 시작점(`main.py`, `app.py`)에서만 로더를 호출하도록 구조를 변경하여 환경 변수 관리의 일관성과 안정성을 확보했습니다.
+
+### 4. 정적 파일(이미지) 경로 문제로 인한 404 오류
+- **문제:** 사용자가 업로드한 이미지가 DB에는 정상 저장되었으나, 웹 페이지에서 이미지를 불러올 때 404 Not Found 오류가 발생했습니다. FastAPI의 정적 파일 마운트 경로(`app.mount`)와 실제 DB에 저장된 이미지 URL 경로가 일치하지 않았기 때문입니다.
+- **해결:** `main.py`의 `app.mount("/static", ...)` 설정을 `app.mount("/uploads", ...)`로 변경하여, 실제 파일이 저장되는 디렉토리 이름과 URL 경로를 직관적으로 일치시켰습니다. 이를 통해 프론트엔드에서 `API_URL/uploads/images/...` 형태로 요청했을 때 FastAPI가 올바른 파일을 찾아 제공할 수 있도록 수정했습니다.
+
 ---
 
 ## 📈 프로젝트 회고 (KPT)
@@ -167,42 +171,70 @@ LLM의 가장 큰 약점인 **환각(Hallucination) 현상**을 최소화하고,
 
 ---
 
-## 🚀 시작하기
+## 🚀 시작하기 (Getting Started)
 
 ### 1. 사전 요구사항
 - [Git](https://git-scm.com/)
 - [Python](https://www.python.org/) 3.12+
-- [Docker](https://www.docker.com/) (선택 사항)
 
-### 2. 설치 및 실행
+### 2. 로컬 환경 설정 및 실행
+
+**1. 프로젝트 클론**
 ```bash
-# 1. 프로젝트 클론
 git clone https://github.com/jjjjunn/can_i_eat_st.git
 cd can_i_eat_st
+```
 
-# 2. 가상환경 생성 및 활성화
+**2. 가상환경 생성 및 활성화**
+```bash
+# Python 가상환경 생성
 python -m venv venv
-# Windows: venv\Scripts\activate | macOS/Linux: source venv/bin/activate
 
-# 3. 필수 패키지 설치
+# Windows
+venv\Scripts\activate
+
+# macOS / Linux
+source venv/bin/activate
+```
+
+**3. 필수 패키지 설치**
+```bash
 pip install --upgrade pip
 pip install -r requirements.txt
-
-# 4. 환경 변수 설정
-# .env.example 파일을 .env 로 복사한 후, 내부 값을 본인의 환경에 맞게 수정합니다.
-cp .env.example .env
-
-# 5. 데이터베이스 테이블 생성
-python -c "from database.database import create_db_and_tables; create_db_and_tables()"
-
-# 6. 서버 실행 (두 개의 터미널을 사용)
-# 터미널 1: FastAPI 백엔드 실행
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-# 터미널 2: Streamlit 프론트엔드 실행
-streamlit run app.py
 ```
-이제 웹 브라우저에서 `http://localhost:8501` 주소로 접속하여 서비스를 확인할 수 있습니다.
+
+**4. 환경 변수 설정**
+
+이 프로젝트는 실행 환경(로컬/클라우드)에 따라 다른 설정 파일을 사용합니다.
+
+- `.env.example` 파일을 복사하여 `.env.local`과 `.env.cloud` 두 개의 파일을 생성합니다.
+- **`.env.local`**: 로컬 개발 환경에서 사용될 설정 파일입니다. `DATABASE_URL`, `GOOGLE_REDIRECT_URI` 등을 `localhost` 또는 `127.0.0.1` 기준으로 설정하세요.
+- **`.env.cloud`**: 클라우드 배포 환경에서 사용될 설정 파일입니다. 실제 서비스 URL 기준으로 설정하세요.
+
+```bash
+# .env.local, .env.cloud 파일 생성 (Windows CMD)
+copy .env.example .env.local
+copy .env.example .env.cloud
+```
+> ⚠️ **중요**: 생성된 `.env.local`과 `.env.cloud` 파일을 열어, 각 환경에 맞는 실제 값들 (API 키, DB 정보 등)을 반드시 입력해야 합니다.
+
+**5. 애플리케이션 실행**
+
+프로젝트 루트 디렉토리의 `run.bat` 스크립트를 사용하여 FastAPI 백엔드와 Streamlit 프론트엔드를 동시에 실행할 수 있습니다.
+
+- **로컬 모드로 실행 (기본):**
+  ```cmd
+  run.bat
+  ```
+  > 이 명령어는 `APP_ENV`를 `local`로 간주하고 `.env.local` 파일을 읽어 서버를 실행합니다.
+
+- **클라우드 모드로 실행 (테스트용):**
+  ```cmd
+  run.bat cloud
+  ```
+  > 이 명령어는 `APP_ENV`를 `cloud`로 설정하고 `.env.cloud` 파일을 읽어 서버를 실행합니다.
+
+실행 후, 웹 브라우저에서 `http://localhost:8501` 주소로 접속하여 서비스를 확인할 수 있습니다.
 
 ---
 

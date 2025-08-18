@@ -35,8 +35,15 @@
 
 ## 🎥 프로젝트 데모
 
-*(프로젝트 시연 영상.)*
-![Project Demo MP4]("https://drive.google.com/file/d/1uYPgfBVS_3KMz0jNJpMdrI2tmVNWErxG/view?usp=sharing")
+### 프로젝트 시연 영상
+
+<details>
+<summary>시연 영상 보기 (클릭)</summary>
+
+https://www.youtube.com/watch?v=tFvjmRmiAmA
+
+</details>
+
 
 | 로그인 | 이미지 업로드 | AI 분석 결과 |
 | :---: | :---: | :---: |

@@ -36,7 +36,7 @@
 ## 🎥 프로젝트 데모
 
 *(프로젝트의 실제 작동 모습을 보여주는 GIF나 짧은 영상을 여기에 추가하세요.)*
-![Project Demo GIF](https://example.com/path/to/your/demo.gif)
+![Project Demo GIF](https://drive.google.com/drive/folders/11QeQcCM7kfitWSil_IeSzr_f15S4umAF)
 
 | 로그인 | 이미지 업로드 | AI 분석 결과 |
 | :---: | :---: | :---: |

@@ -1,34 +1,16 @@
 #!/bin/bash
-
-# 컨테이너 시작 스크립트
 set -e
 
-echo "🚀 컨테이너 시작 중..."
+echo "🚀 FastAPI 단독 시작..."
 
-# Cloud Run PORT 환경변수 확인 (기본값: 8080)
-export PORT=${PORT:-8080}
-echo "📡 포트 설정: $PORT"
+# 포트 설정
+export PORT=${PORT:-8081}
+echo "포트: $PORT"
 
-# 환경 변수 확인
-echo "📋 환경 변수 확인 중..."
-if [ -z "$JWT_SECRET_KEY" ]; then
-    echo "⚠️ JWT_SECRET_KEY가 설정되지 않았습니다."
-fi
+# 필수 디렉토리 생성
+mkdir -p /app/uploads
 
-if [ -z "$DATABASE_URL" ]; then
-    echo "⚠️ DATABASE_URL이 설정되지 않았습니다."
-fi
+cd /app
 
-# 디렉토리 권한 확인
-echo "📁 디렉토리 권한 확인 중..."
-chmod 755 /app/uploads
-chmod 755 /var/log/supervisor
-chmod 755 /var/log/nginx
-
-# Nginx 설정 테스트
-echo "🌐 Nginx 설정 테스트 중..."
-nginx -t
-
-# Supervisord 시작
-echo "🎯 Supervisord 시작 중..."
-exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
+# FastAPI만 시작 (nginx 없이)
+exec uvicorn main:app --host 0.0.0.0 --port $PORT --log-level info

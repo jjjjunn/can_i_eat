@@ -1,3 +1,7 @@
+# 最初に環境変数をロードします
+import utils.env_loader
+utils.env_loader.load_environment_variables()
+
 import streamlit as st
 from PIL import Image
 import time
@@ -8,12 +12,8 @@ from typing import Optional, Dict, Any, List
 import logging
 from datetime import datetime
 from pathlib import Path
-from dotenv import load_dotenv
 import jwt
 import requests
-
-# .env 로드
-load_dotenv()
 
 # 페이지 설정
 st.set_page_config(

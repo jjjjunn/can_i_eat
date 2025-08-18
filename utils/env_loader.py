@@ -1,28 +1,24 @@
 import os
-import yaml
 from pathlib import Path
 from dotenv import load_dotenv
 
 def load_environment_variables():
-    """환경 변수를 .env 파일과 env.yaml 파일에서 로드합니다."""
-    # 먼저 .env 파일 로드
-    load_dotenv()
+    """
+    APP_ENV 환경 변수에 따라 .env.local 또는 .env.cloud 파일에서 환경 변수를 로드합니다.
+    APP_ENV가 설정되지 않은 경우 기본적으로 .env.local을 사용합니다.
+    """
+    # APP_ENV 환경 변수를 확인하여 .env 파일 경로 결정 (기본값: 'local')
+    env = os.getenv('APP_ENV', 'local')
+    dotenv_path = Path(__file__).parent.parent / f".env.{env}"
     
-    # env.yaml 파일이 있으면 로드
-    env_yaml_path = Path(__file__).parent.parent / "env.yaml"
-    if env_yaml_path.exists():
-        try:
-            with open(env_yaml_path, 'r', encoding='utf-8') as file:
-                env_vars = yaml.safe_load(file)
-                
-            # 환경 변수로 설정 (이미 설정된 것은 덮어쓰지 않음)
-            for key, value in env_vars.items():
-                if key not in os.environ:
-                    os.environ[key] = str(value)
-                    
-            print(f"✅ env.yaml에서 {len(env_vars)}개의 환경 변수를 로드했습니다.")
-        except Exception as e:
-            print(f"⚠️ env.yaml 로드 실패: {e}")
+    # 결정된 경로의 .env 파일 로드
+    if dotenv_path.exists():
+        load_dotenv(dotenv_path=dotenv_path)
+        print(f"✅ '{dotenv_path.name}' 파일에서 환경 변수를 로드했습니다. (환경: {env})")
     else:
-        print("⚠️ env.yaml 파일을 찾을 수 없습니다.")
+        # fallback으로 시스템 환경 변수만 사용하도록 경고 메시지 출력
+        print(f"⚠️ {dotenv_path.name} 파일을 찾을 수 없습니다. 시스템에 설정된 환경 변수만 사용됩니다.")
+
+# 함수 호출
+load_environment_variables()
 

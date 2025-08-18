@@ -42,7 +42,8 @@ if "current_page" not in st.session_state:
     st.session_state["current_page"] = 0
 
 if st.session_state.get("logged_in", False):
-    st.write("로그인됨, 토큰:", "***" + st.session_state["jwt_token"][-10:] if st.session_state["jwt_token"] else "None")
+    # st.write("로그인됨, 토큰:", "***" + st.session_state["jwt_token"][-10:] if st.session_state["jwt_token"] else "None")
+    st.write("로그인됨")
 else:
     st.warning("로그인 필요")
 
@@ -70,8 +71,15 @@ def display_log_detail(log: Dict[str, Any]) -> Optional[str]:
         col1, col2 = st.columns([1, 2])
         
         with col1:
-            if log.get('image_url'):
-                st.image(log['image_url'], caption="업로드된 이미지", width=300)
+            image_url = log.get('image_url')
+            if image_url:
+                # 상대 경로일 경우, API_BASE_URL을 붙여 완전한 URL 생성
+                if image_url.startswith('/'):
+                    full_image_url = f"{API_BASE_URL.rstrip('/')}{image_url}"
+                else:
+                    full_image_url = image_url
+                
+                st.image(full_image_url, caption="업로드된 이미지", width=300)
             else:
                 st.info("이미지가 없습니다")
         

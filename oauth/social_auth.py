@@ -4,7 +4,6 @@ from typing import Optional
 from uuid import uuid4
 
 import httpx
-from dotenv import load_dotenv
 from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
@@ -16,8 +15,7 @@ from controllers.users_controllers import create_or_update_social_user
 # 공통 함수 import
 from utils.utils import verify_jwt_token, create_jwt_token
 
-# 환경변수 로드
-load_dotenv()
+# 환경변수는 시작 시점에서 env_loader.py에 의해 중앙 관리됩니다.
 
 router = APIRouter()
 

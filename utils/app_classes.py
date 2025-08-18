@@ -8,7 +8,6 @@ from typing import Optional, Dict, Any, List
 import logging
 from datetime import datetime
 from pathlib import Path
-from dotenv import load_dotenv
 import jwt
 import requests
 
@@ -17,8 +16,8 @@ from services.ocr_service import VisionTextExtractor
 from services.chatbot import IngredientsAnalyzer
 from services.rag import OptimizedRAGSystem
 
-# .env 로드
-load_dotenv()
+# 환경 변수는 앱 시작점(app.py)에서 중앙 관리 방식으로 로드됩니다.
+
 
 # 상수 정의
 MAX_IMAGE_SIZE = 2048

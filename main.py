@@ -139,7 +139,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:8501",  # Streamlit 기본 포트
-        "http://localhost:8080",  # FastAPI 개발 서버
+        "http://localhost:8081",  # FastAPI 개발 서버
         "https://can-i-eat-st-67955155645.asia-northeast3.run.app", # 프로덕션 도메인
         # 필요한 도메인들 추가
     ],
@@ -226,8 +226,25 @@ async def startup_event():
             raise RuntimeError(f"필수 환경 변수가 설정되지 않았습니다: {missing_critical}")
         
         logger.info("🎉 애플리케이션 준비 완료!")
-        logger.info(f"📍 API 문서: https://can-i-eat-st-67955155645.asia-northeast3.run.app/docs") # http://localhost:8000/docs
-        logger.info(f"📍 헬스체크: https://can-i-eat-st-67955155645.asia-northeast3.run.app/health") # http://localhost:8000/health
+        
+        # 환경에 따라 동적 URL 출력
+        app_env = os.getenv('APP_ENV', 'local')
+        if app_env == 'local':
+            host = os.getenv('HOST', '127.0.0.1')
+            port = int(os.getenv('PORT', 8000))
+            base_url = f"http://{host}:{port}"
+            logger.info(f"🏠 로컬 환경에서 실행 중: {base_url}")
+        else: # cloud
+            host = os.getenv('HOST', '0.0.0.0')
+            port = int(os.getenv('PORT', 8080))
+            # 클라우드 환경에서는 실제 외부 URL을 알 수 없으므로, 접속 정보를 안내합니다.
+            base_url = f"http://{host}:{port}"
+            logger.info(f"☁️ 클라우드 환경에서 실행 중. 포트 {port}에서 수신 대기합니다.")
+            logger.info("   외부에서는 클라우드 플랫폼이 제공하는 Public URL로 접속하세요.")
+
+        logger.info(f"📍 API 문서 (Swagger): {base_url}/docs")
+        logger.info(f"📍 API 문서 (ReDoc)  : {base_url}/redoc")
+        logger.info(f"📍 헬스체크         : {base_url}/health")
         
     except Exception as e:
         logger.error(f"❌ 시작 오류: {e}", exc_info=True)
@@ -600,10 +617,24 @@ def get_oauth_config():
 
 if __name__ == "__main__":
     import uvicorn
+    
+    # 환경에 따라 호스트 및 포트 설정
+    app_env = os.getenv('APP_ENV', 'local')
+    
+    if app_env == 'local':
+        host = os.getenv('HOST', '127.0.0.1')
+        port = int(os.getenv('PORT', 8000))
+        reload = True
+    else: # cloud
+        host = os.getenv('HOST', '0.0.0.0')
+        # Google Cloud Run 같은 서비스는 PORT 환경변수로 포트를 지정
+        port = int(os.getenv('PORT', 8080))
+        reload = False
+
     uvicorn.run(
-        app, 
-        host="0.0.0.0", 
-        port=8080,
+        "main:app", 
+        host=host, 
+        port=port,
         log_level="info",
-        reload=True  # 개발 모드
+        reload=reload
     )

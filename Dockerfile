@@ -15,9 +15,9 @@ WORKDIR /app
 # 3단계: 종속성 파일 복사 및 설치
 COPY requirements.txt .
 
-# pip 설치 최적화 및 재시도 로직 추가
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir --timeout 300 --retries 3 -r requirements.txt
+# pip 설치 최적화 및 재시도 로직 추가 (더 안정적)
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir --timeout 600 --retries 5 --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
 
 # 4단계: 소스 코드 복사
 COPY . .

@@ -54,7 +54,7 @@ MSA(Microservice Architecture) 사상을 적용하여 **Streamlit 프론트엔�
 
 ---
 
-## 프로젝트트 폴더 구조
+## 프로젝트 폴더 구조
 
 ```
 can_i_eat/
@@ -81,6 +81,12 @@ can_i_eat/
 사용자, 소셜 계정, 분석 기록을 중심으로 데이터 모델을 설계했으며, `SQLModel`을 사용하여 Python 클래스와 DB 스키마를 일관성 있게 관리합니다.
 ![ERD](assets/ERD.png)
 
+| 모델 | 설명 | 주요 필드 |
+|-------|-------|-----------|
+| users | 회원 정보 저장 | Id, email, name, provider, created_at, last_login_at |
+| roles | 사용자 역할(권한) 구분 | id, name, description |
+| UserFoodLog | 음식 성분 분석 기록 | Image_url, ocr_result, gemini_prompt, gemini_response, created_at |
+| UserActivity | 사용자 활동 로그 | Id, action_type, details, created_at |
 
 ---
 

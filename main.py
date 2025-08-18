@@ -149,13 +149,13 @@ app.add_middleware(
     expose_headers=["*"]
 )
 
-# 정적 파일 서빙
+# 정적 파일 서빙 (이미지 등)
 if os.path.exists("uploads"):
-    app.mount("/static", StaticFiles(directory="uploads"), name="static")
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 else:
     logger.warning("⚠️ uploads 디렉토리가 존재하지 않습니다. 생성합니다.")
     os.makedirs("uploads", exist_ok=True)
-    app.mount("/static", StaticFiles(directory="uploads"), name="static")
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # 라우터 추가
 app.include_router(social_auth.router)

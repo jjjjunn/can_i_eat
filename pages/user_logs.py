@@ -5,7 +5,6 @@ from datetime import datetime
 import json
 from typing import Optional, Dict, Any
 import os
-from dotenv import load_dotenv
 import logging
 from streamlit_cookies_manager import EncryptedCookieManager
 
@@ -13,8 +12,7 @@ from streamlit_cookies_manager import EncryptedCookieManager
 from utils.utils import verify_jwt_token, initialize_app
 from utils.logs import UserLogsViewer, format_datetime, display_log_detail
 
-# .env 파일에서 환경 변수 로드
-load_dotenv()
+# 환경 변수는 앱 시작점(app.py)에서 중앙 관리 방식으로 로드됩니다.
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)

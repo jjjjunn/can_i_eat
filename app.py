@@ -359,29 +359,41 @@ def show_user_home():
     else:
         # 이미지 업로드 및 분석 단계
         st.subheader("📷 이미지 업로드")
-        uploaded_file = st.file_uploader(
-            "성분표 이미지를 선택하세요",
-            type=SUPPORTED_TYPES,
-            help=f"지원 형식: {', '.join(f.upper() for f in SUPPORTED_TYPES)}"
-        )
+        
+        tab1, tab2 = st.tabs(["📁 갤러리에서 선택", "📸 카메라로 촬영"])
 
-        # 파일 업로드 후 처리
-        if uploaded_file is not None:
-            image = ImageProcessor.process_and_validate(uploaded_file)
+        with tab1:
+            uploaded_file = st.file_uploader(
+                "성분표 이미지를 선택하세요",
+                type=SUPPORTED_TYPES,
+                help=f"지원 형식: {', '.join(f.upper() for f in SUPPORTED_TYPES)}",
+                key="gallery_uploader"
+            )
+
+        with tab2:
+            camera_file = st.camera_input(
+                "카메라로 성분표를 촬영하세요",
+                key="camera_uploader"
+            )
+
+        # 둘 중 하나라도 파일이 있으면 처리 로직 실행
+        final_file_to_process = uploaded_file or camera_file
+
+        if final_file_to_process is not None:
+            image = ImageProcessor.process_and_validate(final_file_to_process)
             
             if image:
-                st.image(image, caption="업로드된 이미지", use_container_width=True)
-                st.info(ImageProcessor.get_image_info(uploaded_file, image))
+                st.image(image, caption="분석할 이미지", use_container_width=True)
+                st.info(ImageProcessor.get_image_info(final_file_to_process, image))
                 st.markdown("---")
 
                 # 분석 버튼
                 if st.button("🚀 분석 시작", type="primary", use_container_width=True):
                     logger.info("[Streamlit] '분석 시작' 버튼 클릭")
-                    analyze_image_with_progress(image, uploaded_file, settings)
-                    # st.rerun()  # 분석 완료 후 페이지 새로고침
+                    analyze_image_with_progress(image, final_file_to_process, settings)
 
         else:
-            st.info("👆 성분표 이미지를 업로드해주세요")
+            st.info("👆 갤러리에서 이미지를 선택하거나 카메라로 촬영해주세요.")
             
             # 도움말 섹션 (기존과 동일)
             with st.expander("📖 상세 사용법"):

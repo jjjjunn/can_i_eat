@@ -76,11 +76,11 @@ def save_image(image_bytes: bytes, original_filename: str, user_id: str) -> Opti
         # 썸네일 생성 (선택사항)
         create_thumbnail(file_path, filename)
         
-        # 상대 경로 반환 (DB 저장용)
-        relative_path = str(file_path.relative_to(Path.cwd()))
+        # DB 저장 및 URL 생성을 위한 상대 경로 반환 (웹 표준 '/' 사용)
+        relative_path = os.path.join('uploads', 'images', filename).replace('\\', '/')
         logger.info(f"이미지 저장 완료: {relative_path}")
         
-        return relative_path
+        return f"/{relative_path}" # 웹 루트 경로로 반환
         
     except Exception as e:
         logger.error(f"이미지 저장 실패: {e}")
@@ -102,14 +102,16 @@ def create_thumbnail(original_path: Path, filename: str, size: tuple = (300, 300
             thumbnail_path = THUMBNAILS_DIR / f"thumb_{filename}"
             img.save(thumbnail_path, 'JPEG', quality=85)
             
-            relative_path = str(thumbnail_path.relative_to(Path.cwd()))
+            # DB 저장 및 URL 생성을 위한 상대 경로 반환 (웹 표준 '/' 사용)
+            relative_path = os.path.join('uploads', 'thumbnails', f"thumb_{filename}").replace('\\', '/')
             logger.info(f"썸네일 생성 완료: {relative_path}")
             
-            return relative_path
+            return f"/{relative_path}" # 웹 루트 경로로 반환
             
     except Exception as e:
         logger.error(f"썸네일 생성 실패: {e}")
         return None
+
 
 def get_image_url(file_path: str) -> str:
     """파일 경로를 웹 URL로 변환"""

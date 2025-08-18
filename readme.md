@@ -36,7 +36,7 @@
 ## 🎥 프로젝트 데모
 
 *(프로젝트 시연 영상.)*
-![Project Demo GIF](assets/프로젝트1_시연_1.5배.mp4)
+![Project Demo GIF](https://drive.google.com/file/d/1uYPgfBVS_3KMz0jNJpMdrI2tmVNWErxG/view?usp=drive_link)
 
 | 로그인 | 이미지 업로드 | AI 분석 결과 |
 | :---: | :---: | :---: |

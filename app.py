@@ -1,4 +1,3 @@
-# 最初に環境変数をロードします
 import utils.env_loader
 utils.env_loader.load_environment_variables()
 
